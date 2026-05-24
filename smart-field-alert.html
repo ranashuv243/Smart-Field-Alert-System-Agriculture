@@ -1,0 +1,1862 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Smart Field Alert System — Agri-Tech Solution</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    :root {
+      --bg: #0a1208;
+      --bg-secondary: #0f1a0b;
+      --fg: #e8f0e4;
+      --fg-muted: #8a9e82;
+      --accent: #d4a017;
+      --accent-glow: #f5c842;
+      --green-primary: #2d8a4e;
+      --green-dark: #1a5c32;
+      --green-light: #4ade80;
+      --red-alert: #ef4444;
+      --card: rgba(20, 40, 16, 0.7);
+      --card-border: rgba(45, 138, 78, 0.25);
+      --border: rgba(138, 158, 130, 0.15);
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: var(--bg);
+      color: var(--fg);
+      overflow-x: hidden;
+      line-height: 1.7;
+    }
+
+    h1, h2, h3, h4 { font-family: 'Playfair Display', serif; }
+
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: var(--bg); }
+    ::-webkit-scrollbar-thumb { background: var(--green-dark); border-radius: 3px; }
+
+    .hero-section {
+      position: relative;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
+
+    .hero-bg {
+      position: absolute;
+      inset: 0;
+      background:
+        radial-gradient(ellipse 80% 60% at 20% 80%, rgba(45, 138, 78, 0.15), transparent),
+        radial-gradient(ellipse 60% 50% at 80% 20%, rgba(212, 160, 23, 0.08), transparent),
+        radial-gradient(ellipse 100% 100% at 50% 50%, var(--bg-secondary), var(--bg));
+    }
+
+    #particleCanvas {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      z-index: 1;
+    }
+
+    .hero-content {
+      position: relative;
+      z-index: 2;
+      text-align: center;
+      max-width: 900px;
+      padding: 2rem;
+    }
+
+    .hero-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 18px;
+      border: 1px solid var(--card-border);
+      border-radius: 50px;
+      background: var(--card);
+      backdrop-filter: blur(12px);
+      font-size: 0.85rem;
+      color: var(--green-light);
+      margin-bottom: 2rem;
+      animation: fadeInDown 0.8s ease;
+    }
+
+    .hero-title {
+      font-size: clamp(2.5rem, 6vw, 4.5rem);
+      font-weight: 900;
+      line-height: 1.1;
+      margin-bottom: 1.5rem;
+      animation: fadeInUp 1s ease;
+    }
+
+    .hero-title .highlight {
+      background: linear-gradient(135deg, var(--accent), var(--accent-glow));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .hero-subtitle {
+      font-size: 1.15rem;
+      color: var(--fg-muted);
+      max-width: 650px;
+      margin: 0 auto 2.5rem;
+      animation: fadeInUp 1.2s ease;
+    }
+
+    .hero-actions {
+      display: flex;
+      gap: 1rem;
+      justify-content: center;
+      flex-wrap: wrap;
+      animation: fadeInUp 1.4s ease;
+    }
+
+    .btn-primary {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 14px 32px;
+      background: linear-gradient(135deg, var(--green-primary), var(--green-dark));
+      color: #fff;
+      border: none;
+      border-radius: 12px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      text-decoration: none;
+      font-family: 'DM Sans', sans-serif;
+    }
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 30px rgba(45, 138, 78, 0.4);
+    }
+
+    .btn-outline {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 14px 32px;
+      background: transparent;
+      color: var(--fg);
+      border: 1px solid var(--card-border);
+      border-radius: 12px;
+      font-size: 1rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      text-decoration: none;
+      font-family: 'DM Sans', sans-serif;
+    }
+    .btn-outline:hover {
+      border-color: var(--accent);
+      background: rgba(212, 160, 23, 0.08);
+      transform: translateY(-2px);
+    }
+
+    .scroll-indicator {
+      position: absolute;
+      bottom: 2rem;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 2;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+      color: var(--fg-muted);
+      font-size: 0.8rem;
+      animation: bounce 2s infinite;
+    }
+
+    .section {
+      padding: 6rem 1.5rem;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    .section-label {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      color: var(--accent);
+      font-size: 0.85rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      margin-bottom: 1rem;
+    }
+
+    .section-title {
+      font-size: clamp(2rem, 4vw, 3rem);
+      font-weight: 700;
+      margin-bottom: 1rem;
+      line-height: 1.2;
+    }
+
+    .section-desc {
+      color: var(--fg-muted);
+      font-size: 1.05rem;
+      max-width: 600px;
+      margin-bottom: 3rem;
+    }
+
+    .glass-card {
+      background: var(--card);
+      border: 1px solid var(--card-border);
+      border-radius: 16px;
+      backdrop-filter: blur(12px);
+      padding: 2rem;
+      transition: all 0.35s ease;
+    }
+    .glass-card:hover {
+      border-color: rgba(45, 138, 78, 0.5);
+      transform: translateY(-4px);
+      box-shadow: 0 12px 40px rgba(0, 0, 0, 0.3);
+    }
+
+    .intro-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 1.5rem;
+    }
+
+    .intro-card-icon {
+      width: 56px;
+      height: 56px;
+      border-radius: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.4rem;
+      margin-bottom: 1.2rem;
+    }
+
+    .objective-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+    .objective-list li {
+      display: flex;
+      align-items: flex-start;
+      gap: 1rem;
+      padding: 1.2rem 1.5rem;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      transition: all 0.3s ease;
+    }
+    .objective-list li:hover {
+      border-color: var(--accent);
+      background: rgba(212, 160, 23, 0.05);
+    }
+    .objective-list .obj-num {
+      width: 36px;
+      height: 36px;
+      min-width: 36px;
+      border-radius: 10px;
+      background: linear-gradient(135deg, var(--green-primary), var(--green-dark));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 0.9rem;
+      color: #fff;
+    }
+
+    .comp-table {
+      width: 100%;
+      border-collapse: separate;
+      border-spacing: 0;
+      border-radius: 16px;
+      overflow: hidden;
+      border: 1px solid var(--card-border);
+    }
+    .comp-table thead th {
+      background: rgba(45, 138, 78, 0.15);
+      padding: 1rem 1.5rem;
+      text-align: left;
+      font-weight: 600;
+      color: var(--green-light);
+      font-size: 0.9rem;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+    .comp-table tbody td {
+      padding: 1rem 1.5rem;
+      border-top: 1px solid var(--border);
+      font-size: 0.95rem;
+    }
+    .comp-table tbody tr {
+      transition: background 0.2s;
+    }
+    .comp-table tbody tr:hover {
+      background: rgba(45, 138, 78, 0.06);
+    }
+
+    .flow-container {
+      display: flex;
+      align-items: stretch;
+      gap: 0;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+    .flow-step {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      padding: 1.5rem;
+      max-width: 200px;
+      position: relative;
+    }
+    .flow-step .step-icon {
+      width: 72px;
+      height: 72px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.6rem;
+      margin-bottom: 1rem;
+      position: relative;
+      z-index: 2;
+    }
+    .flow-step .step-label {
+      font-weight: 600;
+      font-size: 0.95rem;
+      margin-bottom: 0.3rem;
+    }
+    .flow-step .step-desc {
+      font-size: 0.82rem;
+      color: var(--fg-muted);
+    }
+    .flow-arrow {
+      display: flex;
+      align-items: center;
+      color: var(--green-primary);
+      font-size: 1.5rem;
+      padding: 0 0.5rem;
+    }
+
+    .circuit-board {
+      background: rgba(10, 18, 8, 0.9);
+      border: 1px solid var(--card-border);
+      border-radius: 20px;
+      padding: 2rem;
+      position: relative;
+      overflow: hidden;
+    }
+    .circuit-board::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(45, 138, 78, 0.05) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(45, 138, 78, 0.05) 1px, transparent 1px);
+      background-size: 20px 20px;
+    }
+
+    .code-block {
+      background: #0d1117;
+      border: 1px solid rgba(45, 138, 78, 0.2);
+      border-radius: 16px;
+      overflow: hidden;
+    }
+    .code-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 1rem 1.5rem;
+      background: rgba(45, 138, 78, 0.08);
+      border-bottom: 1px solid rgba(45, 138, 78, 0.15);
+    }
+    .code-dots {
+      display: flex;
+      gap: 6px;
+    }
+    .code-dots span {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+    }
+    .code-body {
+      padding: 1.5rem;
+      overflow-x: auto;
+      font-family: 'Courier New', monospace;
+      font-size: 0.88rem;
+      line-height: 1.8;
+      tab-size: 2;
+    }
+    .code-body .kw { color: #ff7b72; }
+    .code-body .fn { color: #d2a8ff; }
+    .code-body .str { color: #a5d6ff; }
+    .code-body .num { color: #79c0ff; }
+    .code-body .cm { color: #8b949e; }
+    .code-body .def { color: #ffa657; }
+    .code-body .type { color: #ff7b72; }
+
+    .copy-btn {
+      background: rgba(45, 138, 78, 0.2);
+      border: 1px solid rgba(45, 138, 78, 0.3);
+      color: var(--green-light);
+      padding: 6px 14px;
+      border-radius: 8px;
+      font-size: 0.8rem;
+      cursor: pointer;
+      transition: all 0.2s;
+      font-family: 'DM Sans', sans-serif;
+    }
+    .copy-btn:hover {
+      background: rgba(45, 138, 78, 0.35);
+    }
+
+    .sim-panel {
+      background: var(--card);
+      border: 1px solid var(--card-border);
+      border-radius: 20px;
+      overflow: hidden;
+    }
+    .sim-header {
+      padding: 1.2rem 1.5rem;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .sim-status-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: var(--green-light);
+      animation: pulse-dot 2s infinite;
+    }
+    .sim-body {
+      padding: 2rem;
+    }
+
+    .sim-field {
+      width: 100%;
+      aspect-ratio: 16/9;
+      max-height: 350px;
+      background: linear-gradient(180deg, #0a1f0a 0%, #142814 40%, #1a3a1a 100%);
+      border-radius: 12px;
+      position: relative;
+      overflow: hidden;
+      border: 1px solid var(--border);
+      cursor: pointer;
+    }
+
+    .sim-ground {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 35%;
+      background: linear-gradient(180deg, #1a3a1a, #0f250f);
+    }
+
+    .sim-plant {
+      position: absolute;
+      bottom: 34%;
+      font-size: 1.5rem;
+      transform-origin: bottom center;
+      animation: sway 3s ease-in-out infinite;
+    }
+
+    .sim-sensor {
+      position: absolute;
+      top: 15%;
+      right: 15%;
+      width: 40px;
+      height: 40px;
+      background: rgba(45, 138, 78, 0.3);
+      border: 2px solid var(--green-light);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.9rem;
+      color: var(--green-light);
+    }
+    .sim-sensor.detection {
+      border-color: var(--red-alert);
+      background: rgba(239, 68, 68, 0.3);
+      color: var(--red-alert);
+      animation: sensor-pulse 0.5s infinite;
+    }
+    .sim-sensor-range {
+      position: absolute;
+      top: 5%;
+      right: 5%;
+      width: 120px;
+      height: 120px;
+      border: 1px dashed rgba(45, 138, 78, 0.2);
+      border-radius: 50%;
+    }
+
+    .sim-intruder {
+      position: absolute;
+      bottom: 30%;
+      left: -60px;
+      font-size: 2rem;
+      display: none;
+    }
+    .sim-intruder.moving {
+      display: block;
+      animation: intruder-walk 4s linear forwards;
+    }
+
+    .sim-alert-overlay {
+      position: absolute;
+      inset: 0;
+      background: rgba(239, 68, 68, 0.15);
+      border: 3px solid var(--red-alert);
+      border-radius: 12px;
+      display: none;
+      animation: alert-flash 0.5s infinite;
+      pointer-events: none;
+    }
+    .sim-alert-overlay.active {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .sim-alert-text {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.8rem;
+      font-weight: 900;
+      color: var(--red-alert);
+      text-shadow: 0 0 20px rgba(239, 68, 68, 0.6);
+      letter-spacing: 4px;
+    }
+
+    .sim-controls {
+      display: flex;
+      gap: 1rem;
+      margin-top: 1.5rem;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    .sim-btn {
+      padding: 10px 24px;
+      border-radius: 10px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      cursor: pointer;
+      border: none;
+      transition: all 0.3s;
+      font-family: 'DM Sans', sans-serif;
+    }
+    .sim-btn.alert-btn {
+      background: linear-gradient(135deg, #dc2626, #991b1b);
+      color: #fff;
+    }
+    .sim-btn.alert-btn:hover {
+      box-shadow: 0 6px 20px rgba(220, 38, 38, 0.4);
+      transform: translateY(-2px);
+    }
+    .sim-btn.reset-btn {
+      background: rgba(138, 158, 130, 0.15);
+      color: var(--fg-muted);
+      border: 1px solid var(--border);
+    }
+    .sim-btn.reset-btn:hover {
+      border-color: var(--fg-muted);
+      color: var(--fg);
+    }
+    .sim-btn.auto-btn {
+      background: rgba(212, 160, 23, 0.15);
+      color: var(--accent);
+      border: 1px solid rgba(212, 160, 23, 0.3);
+    }
+    .sim-btn.auto-btn:hover {
+      background: rgba(212, 160, 23, 0.25);
+    }
+    .sim-btn.auto-btn.active {
+      background: linear-gradient(135deg, var(--accent), #b8860b);
+      color: #000;
+      border-color: transparent;
+    }
+
+    .sim-indicators {
+      display: flex;
+      gap: 1.5rem;
+      margin-top: 1.5rem;
+      flex-wrap: wrap;
+    }
+    .sim-indicator {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 12px 20px;
+      background: rgba(10, 18, 8, 0.6);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+    }
+    .indicator-light {
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      transition: all 0.3s;
+    }
+    .indicator-light.red {
+      background: #4a1515;
+      box-shadow: none;
+    }
+    .indicator-light.red.on {
+      background: var(--red-alert);
+      box-shadow: 0 0 12px rgba(239, 68, 68, 0.8);
+    }
+    .indicator-light.green {
+      background: #0f3a1a;
+    }
+    .indicator-light.green.on {
+      background: var(--green-light);
+      box-shadow: 0 0 12px rgba(74, 222, 128, 0.8);
+    }
+    .indicator-light.buzzer {
+      background: #3a2a0a;
+      font-size: 0.7rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: transparent;
+    }
+    .indicator-light.buzzer.on {
+      background: var(--accent);
+      box-shadow: 0 0 12px rgba(212, 160, 23, 0.8);
+      color: #000;
+      animation: buzzer-vibrate 0.1s infinite;
+    }
+
+    .log-console {
+      background: #0d1117;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 1rem;
+      max-height: 150px;
+      overflow-y: auto;
+      margin-top: 1.5rem;
+      font-family: 'Courier New', monospace;
+      font-size: 0.8rem;
+      line-height: 1.8;
+    }
+    .log-console .log-time { color: #8b949e; }
+    .log-console .log-ok { color: var(--green-light); }
+    .log-console .log-warn { color: var(--red-alert); }
+    .log-console .log-info { color: var(--accent); }
+
+    .result-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 1.5rem;
+    }
+    .result-card {
+      text-align: center;
+      padding: 2.5rem 1.5rem;
+    }
+    .result-icon {
+      width: 64px;
+      height: 64px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.5rem;
+      margin: 0 auto 1.2rem;
+    }
+
+    .future-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 1.5rem;
+    }
+    .future-card {
+      padding: 2rem;
+      position: relative;
+      overflow: hidden;
+    }
+    .future-icon {
+      font-size: 2rem;
+      margin-bottom: 1rem;
+      display: block;
+    }
+
+    footer {
+      border-top: 1px solid var(--border);
+      padding: 3rem 1.5rem;
+      text-align: center;
+      color: var(--fg-muted);
+    }
+
+    .toast-container {
+      position: fixed;
+      top: 1.5rem;
+      right: 1.5rem;
+      z-index: 9999;
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+    .toast {
+      padding: 12px 20px;
+      border-radius: 10px;
+      font-size: 0.9rem;
+      font-weight: 500;
+      animation: slideInRight 0.4s ease, fadeOut 0.4s 2.6s ease forwards;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .toast.success {
+      background: rgba(45, 138, 78, 0.9);
+      color: #fff;
+      backdrop-filter: blur(10px);
+    }
+    .toast.warning {
+      background: rgba(220, 38, 38, 0.9);
+      color: #fff;
+      backdrop-filter: blur(10px);
+    }
+
+    .top-nav {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 100;
+      padding: 1rem 2rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      transition: all 0.3s;
+    }
+    .top-nav.scrolled {
+      background: rgba(10, 18, 8, 0.9);
+      backdrop-filter: blur(16px);
+      border-bottom: 1px solid var(--border);
+    }
+    .nav-logo {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-weight: 700;
+      font-size: 1.1rem;
+      color: var(--fg);
+      text-decoration: none;
+    }
+    .nav-logo .logo-icon {
+      width: 36px;
+      height: 36px;
+      border-radius: 10px;
+      background: linear-gradient(135deg, var(--green-primary), var(--accent));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1rem;
+    }
+    .nav-links {
+      display: flex;
+      gap: 2rem;
+      list-style: none;
+    }
+    .nav-links a {
+      color: var(--fg-muted);
+      text-decoration: none;
+      font-size: 0.9rem;
+      font-weight: 500;
+      transition: color 0.2s;
+    }
+    .nav-links a:hover {
+      color: var(--fg);
+    }
+
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(30px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes fadeInDown {
+      from { opacity: 0; transform: translateY(-20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes bounce {
+      0%, 100% { transform: translateX(-50%) translateY(0); }
+      50% { transform: translateX(-50%) translateY(-8px); }
+    }
+    @keyframes pulse-dot {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.4; }
+    }
+    @keyframes sensor-pulse {
+      0%, 100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4); }
+      50% { box-shadow: 0 0 0 12px rgba(239, 68, 68, 0); }
+    }
+    @keyframes intruder-walk {
+      0% { left: -60px; bottom: 30%; }
+      100% { left: calc(100% - 40px); bottom: 30%; }
+    }
+    @keyframes alert-flash {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.6; }
+    }
+    @keyframes buzzer-vibrate {
+      0%, 100% { transform: translateX(0); }
+      25% { transform: translateX(-2px); }
+      75% { transform: translateX(2px); }
+    }
+    @keyframes sway {
+      0%, 100% { transform: rotate(-2deg); }
+      50% { transform: rotate(2deg); }
+    }
+    @keyframes slideInRight {
+      from { opacity: 0; transform: translateX(100px); }
+      to { opacity: 1; transform: translateX(0); }
+    }
+    @keyframes fadeOut {
+      to { opacity: 0; transform: translateX(50px); }
+    }
+
+    .reveal {
+      opacity: 0;
+      transform: translateY(40px);
+      transition: all 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .reveal.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .wire {
+      stroke-dasharray: 8 4;
+      animation: dash-flow 1s linear infinite;
+    }
+    @keyframes dash-flow {
+      to { stroke-dashoffset: -12; }
+    }
+
+    @media (max-width: 768px) {
+      .nav-links { display: none; }
+      .flow-arrow { transform: rotate(90deg); }
+      .flow-container { flex-direction: column; align-items: center; }
+      .sim-field { aspect-ratio: 4/3; }
+      .section { padding: 4rem 1rem; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        transition-duration: 0.01ms !important;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="toast-container" id="toastContainer"></div>
+
+  <nav class="top-nav" id="topNav" role="navigation" aria-label="Main navigation">
+    <a href="#" class="nav-logo">
+      <div class="logo-icon"><i class="fas fa-seedling"></i></div>
+      AgriAlert
+    </a>
+    <ul class="nav-links">
+      <li><a href="#intro">Introduction</a></li>
+      <li><a href="#objectives">Objectives</a></li>
+      <li><a href="#components">Components</a></li>
+      <li><a href="#working">Working</a></li>
+      <li><a href="#circuit">Circuit</a></li>
+      <li><a href="#simulation">Live Sim</a></li>
+      <li><a href="#code">Code</a></li>
+    </ul>
+  </nav>
+
+  <section class="hero-section">
+    <div class="hero-bg"></div>
+    <canvas id="particleCanvas"></canvas>
+    <div class="hero-content">
+      <div class="hero-badge">
+        <i class="fas fa-microchip"></i>
+        Arduino Based Agri-Tech Project
+      </div>
+      <h1 class="hero-title">
+        Smart Field<br><span class="highlight">Alert System</span>
+      </h1>
+      <p class="hero-subtitle">
+        An Arduino-based smart sensor system for ensuring agricultural field security — 
+        detecting animals or intruders and issuing instant alerts.
+      </p>
+      <div class="hero-actions">
+        <a href="#simulation" class="btn-primary">
+          <i class="fas fa-play"></i> View Live Simulation
+        </a>
+        <a href="#code" class="btn-outline">
+          <i class="fas fa-code"></i> Arduino Code
+        </a>
+      </div>
+    </div>
+    <div class="scroll-indicator">
+      <span>Scroll Down</span>
+      <i class="fas fa-chevron-down"></i>
+    </div>
+  </section>
+
+  <section class="section" id="intro">
+    <div class="reveal">
+      <div class="section-label"><i class="fas fa-book-open"></i> Introduction to Robotics</div>
+      <h2 class="section-title">What is Robotics?</h2>
+      <p class="section-desc">
+        Robotics is a technology that uses sensors, controllers, and actuators to perform tasks automatically.
+      </p>
+    </div>
+    <div class="intro-grid reveal">
+      <div class="glass-card">
+        <div class="intro-card-icon" style="background: rgba(45, 138, 78, 0.15); color: var(--green-light);">
+          <i class="fas fa-satellite-dish"></i>
+        </div>
+        <h3 style="font-size: 1.2rem; margin-bottom: 0.5rem;">Sensor</h3>
+        <p style="color: var(--fg-muted); font-size: 0.92rem;">
+          Collects environmental data — for example, the PIR sensor detects motion. It acts as the "eyes" of the system.
+        </p>
+      </div>
+      <div class="glass-card">
+        <div class="intro-card-icon" style="background: rgba(212, 160, 23, 0.15); color: var(--accent);">
+          <i class="fas fa-microchip"></i>
+        </div>
+        <h3 style="font-size: 1.2rem; margin-bottom: 0.5rem;">Controller</h3>
+        <p style="color: var(--fg-muted); font-size: 0.92rem;">
+          Arduino receives data from sensors and makes decisions. It acts as the "brain" of the system.
+        </p>
+      </div>
+      <div class="glass-card">
+        <div class="intro-card-icon" style="background: rgba(239, 68, 68, 0.15); color: var(--red-alert);">
+          <i class="fas fa-bell"></i>
+        </div>
+        <h3 style="font-size: 1.2rem; margin-bottom: 0.5rem;">Actuator</h3>
+        <p style="color: var(--fg-muted); font-size: 0.92rem;">
+          Executes decisions — such as lighting up an LED or sounding a buzzer. It acts as the "hands" of the system.
+        </p>
+      </div>
+    </div>
+    <div class="glass-card reveal" style="margin-top: 2rem; border-left: 3px solid var(--accent);">
+      <p style="font-size: 1rem; color: var(--fg); line-height: 1.8;">
+        <strong style="color: var(--accent);">In this project</strong>, a smart system has been developed using Arduino that monitors agricultural fields 
+        and gives alerts when any movement or abnormal condition is detected.
+      </p>
+    </div>
+  </section>
+
+  <section class="section" id="objectives" style="max-width: 900px;">
+    <div class="reveal">
+      <div class="section-label"><i class="fas fa-bullseye"></i> Objective</div>
+      <h2 class="section-title">Project Objectives</h2>
+      <p class="section-desc">
+        The core goals of this smart system are listed below.
+      </p>
+    </div>
+    <ul class="objective-list reveal">
+      <li>
+        <span class="obj-num">01</span>
+        <div>
+          <strong>Ensure Field Security</strong>
+          <p style="color: var(--fg-muted); font-size: 0.88rem; margin-top: 4px;">Establish 24/7 security monitoring system for agricultural fields.</p>
+        </div>
+      </li>
+      <li>
+        <span class="obj-num">02</span>
+        <div>
+          <strong>Detect Animals or Intruders</strong>
+          <p style="color: var(--fg-muted); font-size: 0.88rem; margin-top: 4px;">Identify unwanted movement through PIR sensor technology.</p>
+        </div>
+      </li>
+      <li>
+        <span class="obj-num">03</span>
+        <div>
+          <strong>Alert the Farmer</strong>
+          <p style="color: var(--fg-muted); font-size: 0.88rem; margin-top: 4px;">Instantly notify the farmer via LED and buzzer alerts.</p>
+        </div>
+      </li>
+      <li>
+        <span class="obj-num">04</span>
+        <div>
+          <strong>Low-Cost Smart Agriculture Solution</strong>
+          <p style="color: var(--fg-muted); font-size: 0.88rem; margin-top: 4px;">An affordable and easily implementable smart agriculture solution.</p>
+        </div>
+      </li>
+    </ul>
+  </section>
+
+  <section class="section" id="components">
+    <div class="reveal">
+      <div class="section-label"><i class="fas fa-tools"></i> Components</div>
+      <h2 class="section-title">Required Components</h2>
+      <p class="section-desc">
+        The following components are needed to build this project.
+      </p>
+    </div>
+    <div class="reveal" style="overflow-x: auto;">
+      <table class="comp-table">
+        <thead>
+          <tr>
+            <th>No.</th>
+            <th>Component</th>
+            <th>Qty</th>
+            <th>Function</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td style="color: var(--accent); font-weight: 600;">01</td>
+            <td><i class="fas fa-microchip" style="color: var(--green-light); margin-right: 8px;"></i>Arduino Uno</td>
+            <td>1</td>
+            <td style="color: var(--fg-muted);">Main controller — makes all decisions</td>
+          </tr>
+          <tr>
+            <td style="color: var(--accent); font-weight: 600;">02</td>
+            <td><i class="fas fa-eye" style="color: var(--green-light); margin-right: 8px;"></i>PIR Motion Sensor</td>
+            <td>1</td>
+            <td style="color: var(--fg-muted);">Detects infrared motion</td>
+          </tr>
+          <tr>
+            <td style="color: var(--accent); font-weight: 600;">03</td>
+            <td><i class="fas fa-ruler" style="color: var(--green-light); margin-right: 8px;"></i>Ultrasonic Sensor</td>
+            <td>1 (Optional)</td>
+            <td style="color: var(--fg-muted);">Measures distance</td>
+          </tr>
+          <tr>
+            <td style="color: var(--accent); font-weight: 600;">04</td>
+            <td><i class="fas fa-volume-up" style="color: var(--green-light); margin-right: 8px;"></i>Buzzer</td>
+            <td>1</td>
+            <td style="color: var(--fg-muted);">Sound-based alert</td>
+          </tr>
+          <tr>
+            <td style="color: var(--accent); font-weight: 600;">05</td>
+            <td><i class="fas fa-lightbulb" style="color: var(--green-light); margin-right: 8px;"></i>LED (Red / Green)</td>
+            <td>2</td>
+            <td style="color: var(--fg-muted);">Visual alert and normal status indicator</td>
+          </tr>
+          <tr>
+            <td style="color: var(--accent); font-weight: 600;">06</td>
+            <td><i class="fas fa-th" style="color: var(--green-light); margin-right: 8px;"></i>Breadboard</td>
+            <td>1</td>
+            <td style="color: var(--fg-muted);">For circuit connections</td>
+          </tr>
+          <tr>
+            <td style="color: var(--accent); font-weight: 600;">07</td>
+            <td><i class="fas fa-plug" style="color: var(--green-light); margin-right: 8px;"></i>Jumper Wires</td>
+            <td>As needed</td>
+            <td style="color: var(--fg-muted);">For connecting components</td>
+          </tr>
+          <tr>
+            <td style="color: var(--accent); font-weight: 600;">08</td>
+            <td><i class="fas fa-battery-full" style="color: var(--green-light); margin-right: 8px;"></i>Power Supply</td>
+            <td>1</td>
+            <td style="color: var(--fg-muted);">Powers the entire system</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="section" id="working" style="max-width: 1000px;">
+    <div class="reveal">
+      <div class="section-label"><i class="fas fa-cogs"></i> Working Principle</div>
+      <h2 class="section-title">How Does It Work?</h2>
+      <p class="section-desc">
+        The step-by-step working process of the system is shown below.
+      </p>
+    </div>
+    <div class="flow-container reveal">
+      <div class="flow-step">
+        <div class="step-icon" style="background: rgba(45, 138, 78, 0.15); color: var(--green-light);">
+          <i class="fas fa-eye"></i>
+        </div>
+        <div class="step-label">PIR Sensor</div>
+        <div class="step-desc">Detects motion<br>in the field</div>
+      </div>
+      <div class="flow-arrow"><i class="fas fa-arrow-right"></i></div>
+      <div class="flow-step">
+        <div class="step-icon" style="background: rgba(212, 160, 23, 0.15); color: var(--accent);">
+          <i class="fas fa-bolt"></i>
+        </div>
+        <div class="step-label">Signal</div>
+        <div class="step-desc">Sends signal<br>to Arduino</div>
+      </div>
+      <div class="flow-arrow"><i class="fas fa-arrow-right"></i></div>
+      <div class="flow-step">
+        <div class="step-icon" style="background: rgba(100, 100, 255, 0.15); color: #8b9cf7;">
+          <i class="fas fa-brain"></i>
+        </div>
+        <div class="step-label">Arduino</div>
+        <div class="step-desc">Processes data<br>& decides</div>
+      </div>
+      <div class="flow-arrow"><i class="fas fa-arrow-right"></i></div>
+      <div class="flow-step">
+        <div class="step-icon" style="background: rgba(239, 68, 68, 0.15); color: var(--red-alert);">
+          <i class="fas fa-exclamation-triangle"></i>
+        </div>
+        <div class="step-label">Alert!</div>
+        <div class="step-desc">LED ON +<br>Buzzer ON</div>
+      </div>
+    </div>
+
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-top: 3rem;" class="reveal">
+      <div class="glass-card" style="border-left: 3px solid var(--red-alert);">
+        <h4 style="color: var(--red-alert); margin-bottom: 0.8rem; font-size: 1.1rem;">
+          <i class="fas fa-exclamation-circle" style="margin-right: 6px;"></i> When Motion is Detected
+        </h4>
+        <ul style="list-style: none; display: flex; flex-direction: column; gap: 0.5rem; color: var(--fg-muted); font-size: 0.92rem;">
+          <li><span style="color: var(--red-alert); margin-right: 8px;">&#9679;</span> Red LED turns ON</li>
+          <li><span style="color: var(--red-alert); margin-right: 8px;">&#9679;</span> Buzzer sounds</li>
+          <li><span style="color: var(--red-alert); margin-right: 8px;">&#9679;</span> Green LED turns OFF</li>
+        </ul>
+      </div>
+      <div class="glass-card" style="border-left: 3px solid var(--green-light);">
+        <h4 style="color: var(--green-light); margin-bottom: 0.8rem; font-size: 1.1rem;">
+          <i class="fas fa-check-circle" style="margin-right: 6px;"></i> Normal Condition
+        </h4>
+        <ul style="list-style: none; display: flex; flex-direction: column; gap: 0.5rem; color: var(--fg-muted); font-size: 0.92rem;">
+          <li><span style="color: var(--green-light); margin-right: 8px;">&#9679;</span> Green LED stays ON</li>
+          <li><span style="color: var(--green-light); margin-right: 8px;">&#9679;</span> Buzzer remains silent</li>
+          <li><span style="color: var(--green-light); margin-right: 8px;">&#9679;</span> Red LED stays OFF</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="circuit">
+    <div class="reveal">
+      <div class="section-label"><i class="fas fa-project-diagram"></i> Circuit Connection</div>
+      <h2 class="section-title">Circuit Diagram</h2>
+      <p class="section-desc">
+        Connect the components to Arduino as per the pin mapping below.
+      </p>
+    </div>
+    <div class="reveal" style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; align-items: start;">
+      <div class="circuit-board">
+        <svg width="100%" height="420" viewBox="0 0 400 420" style="position: relative; z-index: 1;">
+          <line x1="80" y1="120" x2="160" y2="120" class="wire" stroke="#4ade80" stroke-width="2"/>
+          <line x1="160" y1="120" x2="160" y2="100" class="wire" stroke="#4ade80" stroke-width="2"/>
+          <line x1="160" y1="100" x2="200" y2="100" class="wire" stroke="#4ade80" stroke-width="2"/>
+          <text x="130" y="112" fill="#4ade80" font-size="9" font-family="DM Sans">D2</text>
+
+          <line x1="80" y1="200" x2="140" y2="200" class="wire" stroke="#ef4444" stroke-width="2"/>
+          <line x1="140" y1="200" x2="140" y2="140" class="wire" stroke="#ef4444" stroke-width="2"/>
+          <line x1="140" y1="140" x2="200" y2="140" class="wire" stroke="#ef4444" stroke-width="2"/>
+          <text x="105" y="192" fill="#ef4444" font-size="9" font-family="DM Sans">D7</text>
+
+          <line x1="80" y1="270" x2="120" y2="270" class="wire" stroke="#4ade80" stroke-width="2"/>
+          <line x1="120" y1="270" x2="120" y2="160" class="wire" stroke="#4ade80" stroke-width="2"/>
+          <line x1="120" y1="160" x2="200" y2="160" class="wire" stroke="#4ade80" stroke-width="2"/>
+          <text x="85" y="262" fill="#4ade80" font-size="9" font-family="DM Sans">D6</text>
+
+          <line x1="80" y1="340" x2="100" y2="340" class="wire" stroke="#d4a017" stroke-width="2"/>
+          <line x1="100" y1="340" x2="100" y2="180" class="wire" stroke="#d4a017" stroke-width="2"/>
+          <line x1="100" y1="180" x2="200" y2="180" class="wire" stroke="#d4a017" stroke-width="2"/>
+          <text x="60" y="332" fill="#d4a017" font-size="9" font-family="DM Sans">D8</text>
+
+          <line x1="200" y1="80" x2="200" y2="60" class="wire" stroke="#ff7b72" stroke-width="2"/>
+          <line x1="200" y1="60" x2="340" y2="60" class="wire" stroke="#ff7b72" stroke-width="2"/>
+          <text x="260" y="52" fill="#ff7b72" font-size="9" font-family="DM Sans">5V</text>
+
+          <line x1="200" y1="280" x2="200" y2="370" class="wire" stroke="#8b949e" stroke-width="2"/>
+          <line x1="200" y1="370" x2="340" y2="370" class="wire" stroke="#8b949e" stroke-width="2"/>
+          <text x="260" y="385" fill="#8b949e" font-size="9" font-family="DM Sans">GND</text>
+
+          <rect x="200" y="80" width="140" height="200" rx="10" fill="url(#arduinoGrad)" stroke="#2a5a9e" stroke-width="2"/>
+          <defs>
+            <linearGradient id="arduinoGrad" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#1a3a6e"/>
+              <stop offset="100%" stop-color="#0f2850"/>
+            </linearGradient>
+          </defs>
+          <rect x="260" y="72" width="30" height="12" rx="2" fill="#888"/>
+          <text x="270" y="155" fill="#fff" font-size="11" font-family="DM Sans" font-weight="700" text-anchor="middle">ARDUINO</text>
+          <text x="270" y="170" fill="#888" font-size="9" font-family="DM Sans" text-anchor="middle">UNO</text>
+          <rect x="240" y="190" width="60" height="30" rx="3" fill="#222" stroke="#444" stroke-width="1"/>
+          <text x="270" y="209" fill="#666" font-size="6" font-family="monospace" text-anchor="middle">ATmega328</text>
+
+          <text x="205" y="105" fill="#d4a017" font-size="8" font-family="monospace">D2</text>
+          <text x="205" y="145" fill="#d4a017" font-size="8" font-family="monospace">D6</text>
+          <text x="205" y="165" fill="#d4a017" font-size="8" font-family="monospace">D7</text>
+          <text x="205" y="185" fill="#d4a017" font-size="8" font-family="monospace">D8</text>
+
+          <rect x="30" y="95" width="50" height="50" rx="8" fill="rgba(45,138,78,0.15)" stroke="#4ade80" stroke-width="1.5"/>
+          <text x="55" y="117" fill="#4ade80" font-size="8" font-family="DM Sans" text-anchor="middle" font-weight="600">PIR</text>
+          <text x="55" y="132" fill="#8b949e" font-size="7" font-family="DM Sans" text-anchor="middle">Sensor</text>
+
+          <circle cx="55" cy="200" r="20" fill="rgba(239,68,68,0.1)" stroke="#ef4444" stroke-width="1.5"/>
+          <circle cx="55" cy="200" r="8" fill="#ef4444" opacity="0.6" id="circuitRedLed"/>
+          <text x="55" y="230" fill="#8b949e" font-size="7" font-family="DM Sans" text-anchor="middle">Red LED</text>
+
+          <circle cx="55" cy="270" r="20" fill="rgba(74,222,128,0.1)" stroke="#4ade80" stroke-width="1.5"/>
+          <circle cx="55" cy="270" r="8" fill="#4ade80" opacity="0.6" id="circuitGreenLed"/>
+          <text x="55" y="300" fill="#8b949e" font-size="7" font-family="DM Sans" text-anchor="middle">Green LED</text>
+
+          <rect x="30" y="320" width="50" height="40" rx="6" fill="rgba(212,160,23,0.1)" stroke="#d4a017" stroke-width="1.5"/>
+          <text x="55" y="340" fill="#d4a017" font-size="8" font-family="DM Sans" text-anchor="middle" font-weight="600">Buzzer</text>
+          <text x="55" y="353" fill="#8b949e" font-size="7" font-family="DM Sans" text-anchor="middle">Speaker</text>
+
+          <rect x="330" y="40" width="50" height="40" rx="6" fill="rgba(255,123,114,0.1)" stroke="#ff7b72" stroke-width="1.5"/>
+          <text x="355" y="57" fill="#ff7b72" font-size="8" font-family="DM Sans" text-anchor="middle" font-weight="700">+5V</text>
+          <text x="355" y="70" fill="#8b949e" font-size="7" font-family="DM Sans" text-anchor="middle">Power</text>
+
+          <rect x="330" y="350" width="50" height="40" rx="6" fill="rgba(139,148,158,0.1)" stroke="#8b949e" stroke-width="1.5"/>
+          <text x="355" y="367" fill="#8b949e" font-size="8" font-family="DM Sans" text-anchor="middle" font-weight="700">GND</text>
+          <text x="355" y="380" fill="#8b949e" font-size="7" font-family="DM Sans" text-anchor="middle">Ground</text>
+        </svg>
+      </div>
+
+      <div>
+        <div style="display: flex; flex-direction: column; gap: 1rem;">
+          <div class="glass-card" style="padding: 1.2rem 1.5rem; display: flex; align-items: center; gap: 1rem;">
+            <div style="width: 42px; height: 42px; border-radius: 10px; background: rgba(45,138,78,0.15); display: flex; align-items: center; justify-content: center; color: var(--green-light);"><i class="fas fa-eye"></i></div>
+            <div style="flex: 1;">
+              <div style="font-weight: 600; font-size: 0.95rem;">PIR Motion Sensor</div>
+              <div style="color: var(--fg-muted); font-size: 0.82rem;">Motion detection</div>
+            </div>
+            <div style="background: rgba(212,160,23,0.12); color: var(--accent); padding: 4px 14px; border-radius: 6px; font-weight: 700; font-size: 0.85rem;">D2</div>
+          </div>
+          <div class="glass-card" style="padding: 1.2rem 1.5rem; display: flex; align-items: center; gap: 1rem;">
+            <div style="width: 42px; height: 42px; border-radius: 10px; background: rgba(239,68,68,0.15); display: flex; align-items: center; justify-content: center; color: var(--red-alert);"><i class="fas fa-circle"></i></div>
+            <div style="flex: 1;">
+              <div style="font-weight: 600; font-size: 0.95rem;">LED (Red)</div>
+              <div style="color: var(--fg-muted); font-size: 0.82rem;">Alert indicator</div>
+            </div>
+            <div style="background: rgba(212,160,23,0.12); color: var(--accent); padding: 4px 14px; border-radius: 6px; font-weight: 700; font-size: 0.85rem;">D7</div>
+          </div>
+          <div class="glass-card" style="padding: 1.2rem 1.5rem; display: flex; align-items: center; gap: 1rem;">
+            <div style="width: 42px; height: 42px; border-radius: 10px; background: rgba(74,222,128,0.15); display: flex; align-items: center; justify-content: center; color: var(--green-light);"><i class="fas fa-circle"></i></div>
+            <div style="flex: 1;">
+              <div style="font-weight: 600; font-size: 0.95rem;">LED (Green)</div>
+              <div style="color: var(--fg-muted); font-size: 0.82rem;">Normal status indicator</div>
+            </div>
+            <div style="background: rgba(212,160,23,0.12); color: var(--accent); padding: 4px 14px; border-radius: 6px; font-weight: 700; font-size: 0.85rem;">D6</div>
+          </div>
+          <div class="glass-card" style="padding: 1.2rem 1.5rem; display: flex; align-items: center; gap: 1rem;">
+            <div style="width: 42px; height: 42px; border-radius: 10px; background: rgba(212,160,23,0.15); display: flex; align-items: center; justify-content: center; color: var(--accent);"><i class="fas fa-volume-up"></i></div>
+            <div style="flex: 1;">
+              <div style="font-weight: 600; font-size: 0.95rem;">Buzzer</div>
+              <div style="color: var(--fg-muted); font-size: 0.82rem;">Sound alert</div>
+            </div>
+            <div style="background: rgba(212,160,23,0.12); color: var(--accent); padding: 4px 14px; border-radius: 6px; font-weight: 700; font-size: 0.85rem;">D8</div>
+          </div>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+            <div class="glass-card" style="padding: 1rem 1.2rem; text-align: center; border-color: rgba(255,123,114,0.3);">
+              <div style="color: #ff7b72; font-weight: 700; font-size: 1.1rem;">5V</div>
+              <div style="color: var(--fg-muted); font-size: 0.8rem; margin-top: 2px;">VCC</div>
+            </div>
+            <div class="glass-card" style="padding: 1rem 1.2rem; text-align: center; border-color: rgba(139,148,158,0.3);">
+              <div style="color: #8b949e; font-weight: 700; font-size: 1.1rem;">GND</div>
+              <div style="color: var(--fg-muted); font-size: 0.8rem; margin-top: 2px;">Ground</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="simulation">
+    <div class="reveal">
+      <div class="section-label"><i class="fas fa-play-circle"></i> Live Simulation</div>
+      <h2 class="section-title">Real-Time Simulation</h2>
+      <p class="section-desc">
+        Click the buttons below to see how the system works. Watch live what happens when an intruder enters the field.
+      </p>
+    </div>
+    <div class="sim-panel reveal">
+      <div class="sim-header">
+        <div style="display: flex; align-items: center; gap: 10px;">
+          <div class="sim-status-dot" id="simStatusDot"></div>
+          <span style="font-weight: 600; font-size: 0.95rem;">System Active</span>
+        </div>
+        <div style="display: flex; align-items: center; gap: 8px; color: var(--fg-muted); font-size: 0.85rem;">
+          <i class="fas fa-clock"></i>
+          <span id="simTime">00:00:00</span>
+        </div>
+      </div>
+      <div class="sim-body">
+        <div class="sim-field" id="simField">
+          <div style="position: absolute; top: 8%; left: 15%; font-size: 0.7rem; color: rgba(138,158,130,0.3);">
+            <i class="fas fa-moon"></i>
+          </div>
+          <div style="position: absolute; top: 5%; left: 40%; font-size: 0.4rem; color: rgba(138,158,130,0.2);">
+            <i class="fas fa-star"></i>
+          </div>
+          <div style="position: absolute; top: 12%; left: 55%; font-size: 0.3rem; color: rgba(138,158,130,0.15);">
+            <i class="fas fa-star"></i>
+          </div>
+          <div style="position: absolute; top: 3%; left: 70%; font-size: 0.35rem; color: rgba(138,158,130,0.2);">
+            <i class="fas fa-star"></i>
+          </div>
+
+          <div class="sim-sensor-range"></div>
+
+          <div class="sim-sensor" id="simSensor">
+            <i class="fas fa-satellite-dish"></i>
+          </div>
+
+          <div class="sim-plant" style="left: 10%; animation-delay: 0s;">&#127806;</div>
+          <div class="sim-plant" style="left: 25%; animation-delay: 0.5s;">&#127807;</div>
+          <div class="sim-plant" style="left: 45%; animation-delay: 1s;">&#127806;</div>
+          <div class="sim-plant" style="left: 60%; animation-delay: 0.3s;">&#127793;</div>
+          <div class="sim-plant" style="left: 78%; animation-delay: 0.8s;">&#127807;</div>
+          <div class="sim-plant" style="left: 90%; animation-delay: 1.2s;">&#127806;</div>
+
+          <div class="sim-ground"></div>
+
+          <div class="sim-intruder" id="simIntruder">&#129418;</div>
+
+          <div class="sim-alert-overlay" id="simAlertOverlay">
+            <span class="sim-alert-text">ALERT!</span>
+          </div>
+        </div>
+
+        <div class="sim-controls">
+          <button class="sim-btn alert-btn" id="btnTrigger" aria-label="Trigger alert simulation">
+            <i class="fas fa-exclamation-triangle" style="margin-right: 6px;"></i> Detect Intruder
+          </button>
+          <button class="sim-btn reset-btn" id="btnReset" aria-label="Reset the simulation">
+            <i class="fas fa-redo" style="margin-right: 6px;"></i> Reset
+          </button>
+          <button class="sim-btn auto-btn" id="btnAuto" aria-label="Toggle auto mode">
+            <i class="fas fa-robot" style="margin-right: 6px;"></i> Auto Mode
+          </button>
+        </div>
+
+        <div class="sim-indicators">
+          <div class="sim-indicator">
+            <div class="indicator-light red" id="indRed"></div>
+            <span style="font-size: 0.85rem;">Red LED</span>
+          </div>
+          <div class="sim-indicator">
+            <div class="indicator-light green on" id="indGreen"></div>
+            <span style="font-size: 0.85rem;">Green LED</span>
+          </div>
+          <div class="sim-indicator">
+            <div class="indicator-light buzzer" id="indBuzzer"><i class="fas fa-volume-up"></i></div>
+            <span style="font-size: 0.85rem;">Buzzer</span>
+          </div>
+          <div class="sim-indicator">
+            <div class="indicator-light" id="indPIR" style="background: rgba(45,138,78,0.3); color: var(--green-light); display: flex; align-items: center; justify-content: center; font-size: 0.6rem;">PIR</div>
+            <span style="font-size: 0.85rem;">PIR Status</span>
+          </div>
+        </div>
+
+        <div class="log-console" id="logConsole">
+          <div><span class="log-time">[System]</span> <span class="log-ok">Smart Field Alert System initialized...</span></div>
+          <div><span class="log-time">[PIR]</span> <span class="log-info">Sensor calibration complete.</span></div>
+          <div><span class="log-time">[Status]</span> <span class="log-ok">Field is secure. Green LED ON.</span></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="code" style="max-width: 900px;">
+    <div class="reveal">
+      <div class="section-label"><i class="fas fa-code"></i> Arduino Code</div>
+      <h2 class="section-title">Source Code</h2>
+      <p class="section-desc">
+        Copy and upload this code to your Arduino board via Arduino IDE.
+      </p>
+    </div>
+    <div class="code-block reveal">
+      <div class="code-header">
+        <div style="display: flex; align-items: center; gap: 12px;">
+          <div class="code-dots">
+            <span style="background: #ff5f57;"></span>
+            <span style="background: #febc2e;"></span>
+            <span style="background: #28c840;"></span>
+          </div>
+          <span style="color: var(--fg-muted); font-size: 0.85rem;">smart_field_alert.ino</span>
+        </div>
+        <button class="copy-btn" id="copyBtn" aria-label="Copy code to clipboard">
+          <i class="fas fa-copy" style="margin-right: 4px;"></i> Copy
+        </button>
+      </div>
+      <div class="code-body" id="codeBody">
+<span class="cm">// Smart Field Alert System</span>
+<span class="cm">// PIR Sensor + LED + Buzzer</span>
+
+<span class="kw">#define</span> <span class="def">PIR</span>     <span class="num">2</span>
+<span class="kw">#define</span> <span class="def">RED</span>     <span class="num">7</span>
+<span class="kw">#define</span> <span class="def">GREEN</span>   <span class="num">6</span>
+<span class="kw">#define</span> <span class="def">BUZZER</span>  <span class="num">8</span>
+
+<span class="type">void</span> <span class="fn">setup</span>() {
+  <span class="fn">pinMode</span>(<span class="def">PIR</span>, <span class="def">INPUT</span>);
+  <span class="fn">pinMode</span>(<span class="def">RED</span>, <span class="def">OUTPUT</span>);
+  <span class="fn">pinMode</span>(<span class="def">GREEN</span>, <span class="def">OUTPUT</span>);
+  <span class="fn">pinMode</span>(<span class="def">BUZZER</span>, <span class="def">OUTPUT</span>);
+  <span class="fn">Serial</span>.<span class="fn">begin</span>(<span class="num">9600</span>);
+}
+
+<span class="type">void</span> <span class="fn">loop</span>() {
+  <span class="type">int</span> motion = <span class="fn">digitalRead</span>(<span class="def">PIR</span>);
+
+  <span class="kw">if</span> (motion == <span class="def">HIGH</span>) {
+    <span class="cm">// Motion detected — Alert!</span>
+    <span class="fn">digitalWrite</span>(<span class="def">RED</span>, <span class="def">HIGH</span>);
+    <span class="fn">digitalWrite</span>(<span class="def">GREEN</span>, <span class="def">LOW</span>);
+    <span class="fn">digitalWrite</span>(<span class="def">BUZZER</span>, <span class="def">HIGH</span>);
+    <span class="fn">Serial</span>.<span class="fn">println</span>(<span class="str">"Alert! Motion Detected!"</span>);
+  } <span class="kw">else</span> {
+    <span class="cm">// Normal condition</span>
+    <span class="fn">digitalWrite</span>(<span class="def">RED</span>, <span class="def">LOW</span>);
+    <span class="fn">digitalWrite</span>(<span class="def">GREEN</span>, <span class="def">HIGH</span>);
+    <span class="fn">digitalWrite</span>(<span class="def">BUZZER</span>, <span class="def">LOW</span>);
+  }
+
+  <span class="fn">delay</span>(<span class="num">500</span>);
+}
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="results">
+    <div class="reveal">
+      <div class="section-label"><i class="fas fa-chart-bar"></i> Result</div>
+      <h2 class="section-title">Project Results</h2>
+      <p class="section-desc">
+        This system successfully accomplishes the following tasks.
+      </p>
+    </div>
+    <div class="result-grid reveal">
+      <div class="glass-card result-card">
+        <div class="result-icon" style="background: rgba(45, 138, 78, 0.15); color: var(--green-light);">
+          <i class="fas fa-check-double"></i>
+        </div>
+        <h3 style="font-size: 1.15rem; margin-bottom: 0.5rem;">Motion Detection</h3>
+        <p style="color: var(--fg-muted); font-size: 0.9rem;">
+          The system successfully detects any kind of movement in the field.
+        </p>
+      </div>
+      <div class="glass-card result-card">
+        <div class="result-icon" style="background: rgba(239, 68, 68, 0.15); color: var(--red-alert);">
+          <i class="fas fa-bell"></i>
+        </div>
+        <h3 style="font-size: 1.15rem; margin-bottom: 0.5rem;">Instant Alert</h3>
+        <p style="color: var(--fg-muted); font-size: 0.9rem;">
+          Issues an immediate alert as soon as an intruder is detected.
+        </p>
+      </div>
+      <div class="glass-card result-card">
+        <div class="result-icon" style="background: rgba(212, 160, 23, 0.15); color: var(--accent);">
+          <i class="fas fa-shield-alt"></i>
+        </div>
+        <h3 style="font-size: 1.15rem; margin-bottom: 0.5rem;">Improved Security</h3>
+        <p style="color: var(--fg-muted); font-size: 0.9rem;">
+          Field security is significantly enhanced with this system.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="future" style="max-width: 1000px;">
+    <div class="reveal">
+      <div class="section-label"><i class="fas fa-rocket"></i> Future Improvement</div>
+      <h2 class="section-title">Scope for Future Development</h2>
+      <p class="section-desc">
+        This basic system can be further upgraded with advanced features.
+      </p>
+    </div>
+    <div class="future-grid reveal">
+      <div class="glass-card future-card" style="border-top: 3px solid var(--green-light);">
+        <span class="future-icon"><i class="fas fa-sms" style="color: var(--green-light);"></i></span>
+        <h3 style="font-size: 1.1rem; margin-bottom: 0.5rem;">GSM Module</h3>
+        <p style="color: var(--fg-muted); font-size: 0.9rem;">
+          Adding a GSM module enables SMS alerts directly to the farmer's mobile phone. Remote security monitoring becomes possible from any location.
+        </p>
+      </div>
+      <div class="glass-card future-card" style="border-top: 3px solid var(--accent);">
+        <span class="future-icon"><i class="fas fa-camera" style="color: var(--accent);"></i></span>
+        <h3 style="font-size: 1.1rem; margin-bottom: 0.5rem;">Camera Detection</h3>
+        <p style="color: var(--fg-muted); font-size: 0.9rem;">
+          A camera module can capture images of the intruder. This visual evidence can be stored and used later for identification or legal purposes.
+        </p>
+      </div>
+      <div class="glass-card future-card" style="border-top: 3px solid #ff7b72;">
+        <span class="future-icon"><i class="fas fa-solar-panel" style="color: #ff7b72;"></i></span>
+        <h3 style="font-size: 1.1rem; margin-bottom: 0.5rem;">Solar Power</h3>
+        <p style="color: var(--fg-muted); font-size: 0.9rem;">
+          Solar panels can power the system, making it operational in remote areas without access to conventional electricity sources.
+        </p>
+      </div>
+      <div class="glass-card future-card" style="border-top: 3px solid #8b9cf7;">
+        <span class="future-icon"><i class="fas fa-mobile-alt" style="color: #8b9cf7;"></i></span>
+        <h3 style="font-size: 1.1rem; margin-bottom: 0.5rem;">Mobile App Integration</h3>
+        <p style="color: var(--fg-muted); font-size: 0.9rem;">
+          A mobile app enables real-time monitoring and control via WiFi or Bluetooth. Farmers can check status and receive push notifications on their phones.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <div style="max-width: 600px; margin: 0 auto;">
+      <div style="display: flex; align-items: center; justify-content: center; gap: 10px; margin-bottom: 1rem;">
+        <div style="width: 36px; height: 36px; border-radius: 10px; background: linear-gradient(135deg, var(--green-primary), var(--accent)); display: flex; align-items: center; justify-content: center;">
+          <i class="fas fa-seedling" style="color: #fff; font-size: 0.9rem;"></i>
+        </div>
+        <span style="font-weight: 700; font-size: 1.1rem;">AgriAlert</span>
+      </div>
+      <p style="font-size: 0.9rem; margin-bottom: 0.5rem;">
+        Smart Field Alert System — Arduino Based Agri-Tech Solution
+      </p>
+      <p style="font-size: 0.82rem; color: rgba(138,158,130,0.6);">
+        Bridging agriculture and technology for a smarter future
+      </p>
+    </div>
+  </footer>
+
+  <script>
+    /* ================================================
+       Particle System — Floating light dots in hero
+       ================================================ */
+    const canvas = document.getElementById('particleCanvas');
+    const ctx = canvas.getContext('2d');
+    let particles = [];
+    let mouseX = 0, mouseY = 0;
+
+    function resizeCanvas() {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    }
+    resizeCanvas();
+    window.addEventListener('resize', resizeCanvas);
+
+    document.addEventListener('mousemove', (e) => {
+      mouseX = e.clientX;
+      mouseY = e.clientY;
+    });
+
+    class Particle {
+      constructor() {
+        this.reset();
+      }
+      reset() {
+        this.x = Math.random() * canvas.width;
+        this.y = Math.random() * canvas.height;
+        this.size = Math.random() * 2 + 0.5;
+        this.speedX = (Math.random() - 0.5) * 0.3;
+        this.speedY = (Math.random() - 0.5) * 0.3;
+        this.opacity = Math.random() * 0.5 + 0.1;
+        this.isGold = Math.random() > 0.7;
+      }
+      update() {
+        this.x += this.speedX;
+        this.y += this.speedY;
+
+        // Gently repel from mouse cursor
+        const dx = this.x - mouseX;
+        const dy = this.y - mouseY;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+        if (dist < 120) {
+          this.x += dx * 0.01;
+          this.y += dy * 0.01;
+        }
+
+        if (this.x < 0 || this.x > canvas.width || this.y < 0 || this.y > canvas.height) {
+          this.reset();
+        }
+      }
+      draw() {
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, Math.max(0.1, this.size), 0, Math.PI * 2);
+        if (this.isGold) {
+          ctx.fillStyle = `rgba(212, 160, 23, ${this.opacity})`;
+        } else {
+          ctx.fillStyle = `rgba(74, 222, 128, ${this.opacity})`;
+        }
+        ctx.fill();
+      }
+    }
+
+    for (let i = 0; i < 80; i++) {
+      particles.push(new Particle());
+    }
+
+    function animateParticles() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      particles.forEach(p => {
+        p.update();
+        p.draw();
+      });
+
+      // Draw connection lines between nearby particles
+      for (let i = 0; i < particles.length; i++) {
+        for (let j = i + 1; j < particles.length; j++) {
+          const dx = particles[i].x - particles[j].x;
+          const dy = particles[i].y - particles[j].y;
+          const dist = Math.sqrt(dx * dx + dy * dy);
+          if (dist < 120) {
+            ctx.beginPath();
+            ctx.moveTo(particles[i].x, particles[i].y);
+            ctx.lineTo(particles[j].x, particles[j].y);
+            ctx.strokeStyle = `rgba(45, 138, 78, ${0.08 * (1 - dist / 120)})`;
+            ctx.lineWidth = 0.5;
+            ctx.stroke();
+          }
+        }
+      }
+
+      requestAnimationFrame(animateParticles);
+    }
+    animateParticles();
+
+    /* ================================================
+       Navigation scroll effect
+       ================================================ */
+    const topNav = document.getElementById('topNav');
+    window.addEventListener('scroll', () => {
+      topNav.classList.toggle('scrolled', window.scrollY > 80);
+    });
+
+    // Smooth scroll for anchor links
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+      anchor.addEventListener('click', function (e) {
+        e.preventDefault();
+        const target = document.querySelector(this.getAttribute('href'));
+        if (target) {
+          target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+      });
+    });
+
+    /* ================================================
+       Scroll reveal — IntersectionObserver
+       ================================================ */
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('visible');
+        }
+      });
+    }, { threshold: 0.1, rootMargin: '0px 0px -50px 0px' });
+
+    document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+
+    /* ================================================
+       Toast notification system
+       ================================================ */
+    function showToast(message, type = 'success') {
+      const container = document.getElementById('toastContainer');
+      const toast = document.createElement('div');
+      toast.className = `toast ${type}`;
+      const icon = type === 'success' ? 'fa-check-circle' : 'fa-exclamation-triangle';
+      toast.innerHTML = `<i class="fas ${icon}"></i> ${message}`;
+      container.appendChild(toast);
+      setTimeout(() => {
+        if (toast.parentNode) toast.parentNode.removeChild(toast);
+      }, 3000);
+    }
+
+    /* ================================================
+       Live Simulation System
+       ================================================ */
+    const simField = document.getElementById('simField');
+    const simSensor = document.getElementById('simSensor');
+    const simIntruder = document.getElementById('simIntruder');
+    const simAlertOverlay = document.getElementById('simAlertOverlay');
+    const indRed = document.getElementById('indRed');
+    const indGreen = document.getElementById('indGreen');
+    const indBuzzer = document.getElementById('indBuzzer');
+    const indPIR = document.getElementById('indPIR');
+    const logConsole = document.getElementById('logConsole');
+    const circuitRedLed = document.getElementById('circuitRedLed');
+    const circuitGreenLed = document.getElementById('circuitGreenLed');
+
+    let isAlert = false;
+    let autoMode = false;
+    let autoInterval = null;
+    let simSeconds = 0;
+
+    // Simulation timer
+    setInterval(() => {
+      simSeconds++;
+      const h = String(Math.floor(simSeconds / 3600)).padStart(2, '0');
+      const m = String(Math.floor((simSeconds % 3600) / 60)).padStart(2, '0');
+      const s = String(simSeconds % 60).padStart(2, '0');
+      document.getElementById('simTime').textContent = `${h}:${m}:${s}`;
+    }, 1000);
+
+    // Add log entry
+    function addLog(tag, message, type = 'ok') {
+      const time = new Date().toLocaleTimeString();
+      const div = document.createElement('div');
+      div.innerHTML = `<span class="log-time">[${time}]</span> <span style="color: var(--fg-muted);">[${tag}]</span> <span class="log-${type}">${message}</span>`;
+      logConsole.appendChild(div);
+      logConsole.scrollTop = logConsole.scrollHeight;
+    }
+
+    // Trigger alert
+    function triggerAlert() {
+      if (isAlert) return;
+      isAlert = true;
+
+      // Simulation field visuals
+      simSensor.classList.add('detection');
+      simIntruder.classList.add('moving');
+      simAlertOverlay.classList.add('active');
+
+      // Indicators
+      indRed.classList.add('on');
+      indGreen.classList.remove('on');
+      indBuzzer.classList.add('on');
+      indPIR.style.background = 'rgba(239, 68, 68, 0.6)';
+      indPIR.style.color = '#fff';
+
+      // Circuit diagram LED feedback
+      circuitRedLed.setAttribute('fill', '#ef4444');
+      circuitRedLed.setAttribute('opacity', '1');
+      circuitGreenLed.setAttribute('fill', '#4ade80');
+      circuitGreenLed.setAttribute('opacity', '0.2');
+
+      // Log entries
+      addLog('PIR', 'MOTION DETECTED!', 'warn');
+      addLog('Arduino', 'Red LED ON, Green LED OFF, Buzzer ON', 'warn');
+      addLog('System', 'Intruder alert sent to farmer!', 'warn');
+
+      // Toast
+      showToast('Intruder Detected! Alert Active!', 'warning');
+
+      // Auto-reset after 5 seconds (when not in auto mode)
+      if (!autoMode) {
+        setTimeout(() => { resetSystem(); }, 5000);
+      }
+    }
+
+    // Reset system
+    function resetSystem() {
+      isAlert = false;
+
+      simSensor.classList.remove('detection');
+      simIntruder.classList.remove('moving');
+      simAlertOverlay.classList.remove('active');
+
+      indRed.classList.remove('on');
+      indGreen.classList.add('on');
+      indBuzzer.classList.remove('on');
+      indPIR.style.background = 'rgba(45, 138, 78, 0.3)';
+      indPIR.style.color = 'var(--green-light)';
+
+      circuitRedLed.setAttribute('fill', '#ef4444');
+      circuitRedLed.setAttribute('opacity', '0.2');
+      circuitGreenLed.setAttribute('fill', '#4ade80');
+      circuitGreenLed.setAttribute('opacity', '0.6');
+
+      addLog('PIR', 'No motion detected.', 'ok');
+      addLog('System', 'Field is secure. Normal mode.', 'ok');
+    }
+
+    // Button event listeners
+    document.getElementById('btnTrigger').addEventListener('click', triggerAlert);
+
+    document.getElementById('btnReset').addEventListener('click', () => {
+      resetSystem();
+      showToast('System Reset Successfully!', 'success');
+    });
+
+    document.getElementById('btnAuto').addEventListener('click', function () {
+      autoMode = !autoMode;
+      this.classList.toggle('active', autoMode);
+
+      if (autoMode) {
+        addLog('Mode', 'Auto Mode ENABLED — random triggers every 4-10s', 'info');
+        showToast('Auto Mode Enabled!', 'success');
+        scheduleAutoTrigger();
+      } else {
+        addLog('Mode', 'Auto Mode DISABLED', 'info');
+        showToast('Auto Mode Disabled', 'success');
+        clearTimeout(autoInterval);
+        resetSystem();
+      }
+    });
+
+    function scheduleAutoTrigger() {
+      if (!autoMode) return;
+      const delay = 4000 + Math.random() * 6000;
+      autoInterval = setTimeout(() => {
+        if (!autoMode) return;
+        if (isAlert) {
+          resetSystem();
+          setTimeout(scheduleAutoTrigger, 2000);
+        } else {
+          triggerAlert();
+          setTimeout(() => {
+            if (autoMode) {
+              resetSystem();
+              setTimeout(scheduleAutoTrigger, 2000);
+            }
+          }, 3000);
+        }
+      }, delay);
+    }
+
+    /* ================================================
+       Code copy button
+       ================================================ */
+    document.getElementById('copyBtn').addEventListener('click', function () {
+      const rawCode = `#define PIR     2
+#define RED     7
+#define GREEN   6
+#define BUZZER  8
+
+void setup() {
+  pinMode(PIR, INPUT);
+  pinMode(RED, OUTPUT);
+  pinMode(GREEN, OUTPUT);
+  pinMode(BUZZER, OUTPUT);
+  Serial.begin(9600);
+}
+
+void loop() {
+  int motion = digitalRead(PIR);
+
+  if (motion == HIGH) {
+    digitalWrite(RED, HIGH);
+    digitalWrite(GREEN, LOW);
+    digitalWrite(BUZZER, HIGH);
+    Serial.println("Alert! Motion Detected!");
+  } else {
+    digitalWrite(RED, LOW);
+    digitalWrite(GREEN, HIGH);
+    digitalWrite(BUZZER, LOW);
+  }
+
+  delay(500);
+}`;
+
+      navigator.clipboard.writeText(rawCode).then(() => {
+        this.innerHTML = '<i class="fas fa-check" style="margin-right: 4px;"></i> Copied!';
+        showToast('Code copied to clipboard!', 'success');
+        setTimeout(() => {
+          this.innerHTML = '<i class="fas fa-copy" style="margin-right: 4px;"></i> Copy';
+        }, 2000);
+      }).catch(() => {
+        showToast('Copy failed — please select manually', 'warning');
+      });
+    });
+
+    /* ================================================
+       Click on simulation field to trigger
+       ================================================ */
+    simField.addEventListener('click', (e) => {
+      if (e.target.closest('.sim-btn')) return;
+      if (!isAlert) triggerAlert();
+    });
+  </script>
+</body>
+</html>
